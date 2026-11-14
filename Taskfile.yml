@@ -1,0 +1,55 @@
+version: "3"
+
+vars:
+  COMPOSE: docker compose --env-file .env -f infra/compose/docker-compose.yml
+
+tasks:
+  default:
+    desc: List available tasks
+    silent: true
+    cmds:
+      - task --list
+
+  up:
+    desc: Start the local infrastructure and wait until it is healthy
+    preconditions:
+      - sh: test -f .env
+        msg: "Missing .env file. Run: cp .env.example .env"
+    cmds:
+      - "{{.COMPOSE}} up -d --wait"
+
+  down:
+    desc: Stop the local infrastructure (data is kept)
+    cmds:
+      - "{{.COMPOSE}} down"
+
+  reset:
+    desc: Stop the infrastructure and DELETE all local data
+    cmds:
+      - "{{.COMPOSE}} down -v"
+
+  ps:
+    desc: Show the status of the services
+    cmds:
+      - "{{.COMPOSE}} ps"
+
+  logs:
+    desc: Follow the logs of all services
+    cmds:
+      - "{{.COMPOSE}} logs -f --tail=100"
+
+  config:
+    desc: Validate the Compose file
+    cmds:
+      - "{{.COMPOSE}} config --quiet"
+
+  psql:
+    desc: Open a psql shell in the PostgreSQL container
+    interactive: true
+    cmds:
+      - "{{.COMPOSE}} exec postgres sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'"
+
+  lint:
+    desc: Run all pre-commit checks on every file
+    cmds:
+      - pre-commit run --all-files
