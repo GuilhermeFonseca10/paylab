@@ -1,7 +1,7 @@
 # ADR 0011: Use Task instead of make as the task runner
 
 - **Status:** Accepted
-- **Date:** 2026-11-07
+- **Date:** 2026-11-14
 
 ## Context
 

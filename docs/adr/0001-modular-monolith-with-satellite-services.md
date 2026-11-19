@@ -1,7 +1,7 @@
 # ADR 0001: Modular monolith with satellite services
 
 - **Status:** Accepted
-- **Date:** 2026-11-07
+- **Date:** 2026-11-14
 
 ## Context
 

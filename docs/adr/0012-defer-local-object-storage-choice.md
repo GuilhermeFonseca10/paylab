@@ -1,7 +1,7 @@
 # ADR 0012: Defer the choice of local object storage to Phase 8
 
 - **Status:** Accepted
-- **Date:** 2026-11-07
+- **Date:** 2026-11-14
 
 ## Context
 
