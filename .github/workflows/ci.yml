@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint and checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache pre-commit environments
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Run pre-commit on all files
+        run: pre-commit run --all-files --show-diff-on-failure
+
+  infra:
+    name: Local infrastructure smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create .env from the example
+        run: cp .env.example .env
+      - name: Validate the Compose file
+        run: docker compose --env-file .env -f infra/compose/docker-compose.yml config --quiet
+      - name: Start services and wait until healthy
+        run: docker compose --env-file .env -f infra/compose/docker-compose.yml up -d --wait
+      - name: Show service status
+        run: docker compose --env-file .env -f infra/compose/docker-compose.yml ps
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose --env-file .env -f infra/compose/docker-compose.yml logs
+      - name: Stop services and remove volumes
+        if: always()
+        run: docker compose --env-file .env -f infra/compose/docker-compose.yml down -v
